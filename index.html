@@ -1,53 +1,39 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bored Eyeball — Reconstruction</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bored Eyeball — Standalone Reconstruction</title>
 <style>
-:root{color-scheme:light;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:#f7f7f4;color:#111}
-#eye-root{position:fixed;left:24px;bottom:24px;z-index:40;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none}
-#eye{position:relative;width:64px;height:64px;border:4px solid #111;border-radius:50%;background:#fff;box-shadow:4px 4px 0 #111;pointer-events:auto;cursor:pointer;overflow:hidden;transform:translateZ(0);transition:transform .16s ease}
-#eye:focus-visible{outline:3px solid #7c3aed;outline-offset:5px}
-#iris{position:absolute;left:50%;top:50%;width:27px;height:27px;border-radius:50%;background:#111;transform:translate(-50%,-50%);transition:transform .08s linear}
-#pupil{position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:#fff;transform:translate(-50%,-50%)}
-#lid{position:absolute;inset:0 0 auto;height:0;background:#f5c84c;border-bottom:4px solid #111;z-index:2;transition:height .12s ease}
-#eye.blink #lid{height:100%}
-#eye.dizzy{animation:dizzy .42s ease}
-#bubble{max-width:230px;margin:0 0 12px;padding:10px 12px;border:3px solid #111;border-radius:12px;background:#fff;box-shadow:3px 3px 0 #111;font-size:13px;font-weight:700;line-height:1.3;opacity:0;transform:translateY(5px);transition:opacity .15s,transform .15s}
-#bubble.show{opacity:1;transform:translateY(0)}
-@keyframes dizzy{0%,100%{transform:rotate(0)}25%{transform:rotate(-13deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-7deg)}}
+:root{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#111;background:#fafaf9}
+*{box-sizing:border-box}body{margin:0;min-height:180vh;background:#fafaf9}
+#eye-root{position:fixed;bottom:24px;left:24px;z-index:40;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none}
+#eye{width:64px;height:64px;position:relative;display:flex;align-items:center;justify-content:center;background:#fff;border:4px solid #000;border-radius:50%;box-shadow:4px 4px 0 #000;overflow:hidden;pointer-events:auto;cursor:pointer;transition:transform .15s;z-index:10}
+#eye:focus-visible{outline:3px solid #7c3aed;outline-offset:4px}
+#iris{position:absolute;width:36px;height:36px;border:2px solid #000;border-radius:50%;background:#cbd5e1;display:flex;align-items:center;justify-content:center;transition:transform .08s ease-out}
+#pupil{width:10px;height:10px;border-radius:50%;background:#000;position:relative}
+#pupil:after{content:"";position:absolute;width:6px;height:6px;right:-4px;top:-4px;background:#fff;border-radius:50%;opacity:.5}
+#lid{position:absolute;top:0;left:0;right:0;height:45%;background:#f5c84c;border-bottom:2px solid #000;z-index:3;transition:height .15s}
+#eye.blink #lid{height:100%}#eye.poked{transform:scale(.92)}#eye.poked #iris{width:24px;height:24px;background:#000}#eye.poked #pupil{background:#fff}
+#eye.dizzy{animation:eye-dizzy .4s ease infinite alternate}#eye.dizzy #iris{background:#fff}#eye.dizzy #pupil{width:0;height:0}
+@keyframes eye-dizzy{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
+#bubble,#bookmark,#feedback{position:relative;max-width:260px;margin:0 0 16px 8px;padding:12px;border:2px solid #000;background:#fff;box-shadow:4px 4px 0 #000;font-size:14px;font-weight:700;line-height:1.35;pointer-events:auto;animation:appear .15s ease}
+#bubble{max-width:200px;display:none}#bubble.show{display:block}
+#bookmark{background:#f5c84c;max-width:220px}#bookmark[hidden],#feedback[hidden],#back-top[hidden]{display:none}
+#bookmark p,#feedback p{margin:0 0 10px}#bookmark .actions,#feedback .vote-row{display:flex;gap:8px}
+button{font:inherit;cursor:pointer}#bookmark button,#feedback button{border:2px solid #000;padding:6px 10px;background:#fff;font-size:12px;font-weight:800;box-shadow:2px 2px 0 #000}
+#bookmark #bookmark-yes{background:#000;color:#f5c84c}
+#feedback{max-width:260px;background:#fff}#feedback small{display:block;font-size:11px;color:#555;margin-bottom:10px}
+#feedback [data-vote=up]{background:#4ade80}#feedback [data-vote=down]{background:#ef4444;color:#fff}
+#feedback .close{position:absolute;right:6px;top:5px;border:0;background:transparent;box-shadow:none;font-size:18px}
+#feedback footer{margin-top:12px;padding-top:8px;border-top:1px solid #ddd;text-align:right}#feedback footer button{border:0;box-shadow:none;color:#777}
+.reason-list{display:grid;gap:7px}.reason-list button{text-align:left}
+#back-top{position:fixed;right:24px;bottom:24px;z-index:30;border:2px solid #000;background:#f5c84c;padding:10px 14px;box-shadow:3px 3px 0 #000;font-weight:800}
+@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-</style>
-</head>
-<body>
-<main aria-label="Bored Eyeball reconstruction">
+</style></head><body>
+<main aria-label="Judgemental Eye standalone reconstruction">
 <div id="eye-root">
+<div id="feedback" role="dialog" aria-label="Site feedback" hidden></div>
+<div id="bookmark" hidden><p>Bookmark me!</p><div class="actions"><button id="bookmark-yes">Yes</button><button id="bookmark-no">Hell no</button></div></div>
 <div id="bubble" role="status" aria-live="polite"></div>
-<button id="eye" type="button" aria-label="A judgemental floating eye. Click to poke it." title="Poke the eye">
-<span id="lid" aria-hidden="true"></span><span id="iris" aria-hidden="true"><span id="pupil"></span></span>
-</button>
+<button id="eye" type="button" aria-label="Judgemental floating eye" title="I am judging you (lazily)."><span id="lid" aria-hidden="true"></span><span id="iris" aria-hidden="true"><span id="pupil"></span></span></button>
 </div>
-</main>
-<script>
-(()=> {
- const eye=document.querySelector("#eye"), iris=document.querySelector("#iris"), bubble=document.querySelector("#bubble");
- let hideBubble, lastMove=0;
- const comments=["Really? That's what you're doing?","I’m watching you.","You look bored. Convenient.","Go on. Click me again.","Fascinating. Truly."];
- function look(x,y){
-  const r=eye.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
-  const dx=x-cx,dy=y-cy, angle=Math.atan2(dy,dx), dist=Math.min(8,Math.hypot(dx,dy)/18);
-  iris.style.transform=`translate(calc(-50% + ${Math.cos(angle)*dist}px),calc(-50% + ${Math.sin(angle)*dist}px))`;
- }
- window.addEventListener("pointermove",e=>{look(e.clientX,e.clientY);if(Date.now()-lastMove>1200){lastMove=Date.now();eye.classList.remove("dizzy")}});
- window.addEventListener("scroll",()=>{eye.classList.remove("dizzy");void eye.offsetWidth;eye.classList.add("dizzy")},{passive:true});
- function say(text){bubble.textContent=text;bubble.classList.add("show");clearTimeout(hideBubble);hideBubble=setTimeout(()=>bubble.classList.remove("show"),2600)}
- eye.addEventListener("click",()=>{eye.classList.add("blink");setTimeout(()=>eye.classList.remove("blink"),180);say(comments[Math.floor(Math.random()*comments.length)])});
- function blink(){eye.classList.add("blink");setTimeout(()=>eye.classList.remove("blink"),130);setTimeout(blink,2400+Math.random()*4200)}
- setTimeout(blink,1600);
-})();
-</script>
-</body>
-</html>
+<button id="back-top" hidden>↑ Back to top</button>
+</main><script src="./script.js"></script></body></html>
