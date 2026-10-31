@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bored Eyeball — Reconstruction</title>
+<style>
+:root{color-scheme:light;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#f7f7f4;color:#111}
+#eye-root{position:fixed;left:24px;bottom:24px;z-index:40;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none}
+#eye{position:relative;width:64px;height:64px;border:4px solid #111;border-radius:50%;background:#fff;box-shadow:4px 4px 0 #111;pointer-events:auto;cursor:pointer;overflow:hidden;transform:translateZ(0);transition:transform .16s ease}
+#eye:focus-visible{outline:3px solid #7c3aed;outline-offset:5px}
+#iris{position:absolute;left:50%;top:50%;width:27px;height:27px;border-radius:50%;background:#111;transform:translate(-50%,-50%);transition:transform .08s linear}
+#pupil{position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:#fff;transform:translate(-50%,-50%)}
+#lid{position:absolute;inset:0 0 auto;height:0;background:#f5c84c;border-bottom:4px solid #111;z-index:2;transition:height .12s ease}
+#eye.blink #lid{height:100%}
+#eye.dizzy{animation:dizzy .42s ease}
+#bubble{max-width:230px;margin:0 0 12px;padding:10px 12px;border:3px solid #111;border-radius:12px;background:#fff;box-shadow:3px 3px 0 #111;font-size:13px;font-weight:700;line-height:1.3;opacity:0;transform:translateY(5px);transition:opacity .15s,transform .15s}
+#bubble.show{opacity:1;transform:translateY(0)}
+@keyframes dizzy{0%,100%{transform:rotate(0)}25%{transform:rotate(-13deg)}50%{transform:rotate(12deg)}75%{transform:rotate(-7deg)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main aria-label="Bored Eyeball reconstruction">
+<div id="eye-root">
+<div id="bubble" role="status" aria-live="polite"></div>
+<button id="eye" type="button" aria-label="A judgemental floating eye. Click to poke it." title="Poke the eye">
+<span id="lid" aria-hidden="true"></span><span id="iris" aria-hidden="true"><span id="pupil"></span></span>
+</button>
+</div>
+</main>
+<script>
+(()=> {
+ const eye=document.querySelector("#eye"), iris=document.querySelector("#iris"), bubble=document.querySelector("#bubble");
+ let hideBubble, lastMove=0;
+ const comments=["Really? That's what you're doing?","I’m watching you.","You look bored. Convenient.","Go on. Click me again.","Fascinating. Truly."];
+ function look(x,y){
+  const r=eye.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const dx=x-cx,dy=y-cy, angle=Math.atan2(dy,dx), dist=Math.min(8,Math.hypot(dx,dy)/18);
+  iris.style.transform=`translate(calc(-50% + ${Math.cos(angle)*dist}px),calc(-50% + ${Math.sin(angle)*dist}px))`;
+ }
+ window.addEventListener("pointermove",e=>{look(e.clientX,e.clientY);if(Date.now()-lastMove>1200){lastMove=Date.now();eye.classList.remove("dizzy")}});
+ window.addEventListener("scroll",()=>{eye.classList.remove("dizzy");void eye.offsetWidth;eye.classList.add("dizzy")},{passive:true});
+ function say(text){bubble.textContent=text;bubble.classList.add("show");clearTimeout(hideBubble);hideBubble=setTimeout(()=>bubble.classList.remove("show"),2600)}
+ eye.addEventListener("click",()=>{eye.classList.add("blink");setTimeout(()=>eye.classList.remove("blink"),180);say(comments[Math.floor(Math.random()*comments.length)])});
+ function blink(){eye.classList.add("blink");setTimeout(()=>eye.classList.remove("blink"),130);setTimeout(blink,2400+Math.random()*4200)}
+ setTimeout(blink,1600);
+})();
+</script>
+</body>
+</html>
